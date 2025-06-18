@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mechanical Elf Saga — Under Oaxaca</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="gameContainer">
+  <button id="muteBtn" title="Mute / Unmute sound">🔊</button>
+  <div id="pixelHearts">
+    <div class="heart"></div>
+    <div class="heart"></div>
+    <div class="heart"></div>
+  </div>
+  <div id="startScreen" class="active">
+    <h1>Mechanical Elf Saga — Under Oaxaca</h1>
+    <!-- Replace with your own sprite -->
+    <img src="https://i.imgur.com/UgUw0RK.png" alt="Mechanical Elf Mystic" />
+    <button id="startBtn">Start Your Journey</button>
+  </div>
+  <div id="gameScreen">
+    <div id="healthBars">
+      <div class="healthBar">
+        Eddy HP: <span id="heroHPtext"></span>
+        <div id="heroHP" style="width:100%"></div>
+      </div>
+      <div class="healthBar">
+        <span id="enemyName"></span> HP: <span id="enemyHPtext"></span>
+        <div id="enemyHP" style="width:100%"></div>
+      </div>
+    </div>
+    <div id="narration"></div>
+    <div id="choices"></div>
+  </div>
+</div>
+<!-- Audio assets hosted externally -->
+<audio id="bgMusic" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_eb73a2931c.mp3?filename=8-bit-arcade-1053.mp3"></audio>
+<audio id="combatMusic" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_cdbf4f79e6.mp3?filename=fast-8bit-game-13417.mp3"></audio>
+<script src="script.js"></script>
+</body>
+</html>
