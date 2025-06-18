@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Eddy - Aventure Souterraine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: linear-gradient(180deg, #0a001a 0%, #1c0f3c 100%);
+    font-family: 'Share Tech Mono', monospace;
+    color: #e0d8ff;
+    overflow: hidden;
+    user-select: none;
+  }
+  #container {
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  button {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    padding: 12px 28px;
+    background: #7b59d1;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 0 20px #a085ff;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  button:hover {
+    background-color: #a085ff;
+  }
+  #startScreen, #combatScreen, #resultScreen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    max-width: 700px;
+    text-align: center;
+    padding: 20px;
+  }
+  #startScreen.active, #combatScreen.active, #resultScreen.active {
+    display: flex;
+  }
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    user-select: none;
+  }
+  #introText {
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+  #startImage {
+    width: 320px;
+    height: 320px;
+    image-rendering: pixelated;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 10px #a085ff);
+  }
+  #battlefield {
+    position: relative;
+    width: 640px; max-width: 95vw;
+    height: 480px;
+    background: #130934;
+    border: 3px solid #7b59d1;
+    border-radius: 10px;
+    box-shadow: 0 0 25px #7b59d1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    box-sizing: border-box;
+    user-select: none;
+  }
+  #healthBars {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  .healthContainer {
+    width: 45%;
+    background: #2c146a;
+    border: 1px solid #7b59d1;
+    border-radius: 6px;
+    height: 24px;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .healthBar {
+    height: 100%;
+    background: #ff3a96;
+    border-radius: 6px 0 0 6px;
+    transition: width 0.4s ease;
+  }
+  #messageBox {
+    background: rgba(40, 12, 70, 0.85);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    min-height: 72px;
+    color: #f0dfff;
+    user-select: text;
+    white-space: pre-wrap;
+  }
+  #charactersRow {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 120px;
+    margin-bottom: 12px;
+  }
+  canvas.character {
+    image-rendering: pixelated;
+    width: 96px;
+    height: 96px;
+    background: transparent;
+    border-radius: 8px;
+    box-shadow: 0 0 15px #a085ff;
+  }
+  #actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 10px;
+  }
+  .actionBtn {
+    background: #7b59d1;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 0 12px #a085ff;
+    transition: background-color 0.3s ease;
+  }
+  .actionBtn:disabled {
+    background: #432a7a;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .actionBtn:hover:not(:disabled) {
+    background-color: #a085ff;
+  }
+  #muteBtn {
+    position: absolute;
+    top: 16px; left: 16px;
+    background: transparent;
+    border: none;
+    color: #7b59d1;
+    font-size: 26px;
+    cursor: pointer;
+    user-select: none;
+    z-index: 10;
+    transition: color 0.3s ease;
+  }
+  #muteBtn:hover {
+    color: #c9b2ff;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+
+  <!-- Ecran d'accueil -->
+  <section id="startScreen" class="active" role="main" aria-label="Ecran d'accueil du jeu">
+    <h1>Eddy - Aventure Souterraine</h1>
+    <canvas id="startImage" width="320" height="320" aria-label="Illustration mystique d'un elfe mécanique" role="img"></canvas>
+    <div id="introText">
+      Sous la ville de Oaxaca, entre l’UABJO et l’anexo, un héros inattendu s’éveille : Eddy, un cœur animé par la volonté.<br/><br/>
+      Explorez des cavernes oubliées, affrontez des créatures mystérieuses, et découvrez les secrets enfouis.<br/><br/>
+      Serez-vous à la hauteur des épreuves ?
+    </div>
+    <button id="startBtn" aria-label="Démarrer l’aventure">Démarrer l’aventure</button>
+  </section>
+
+  <!-- Ecran combat -->
+  <section id="combatScreen" role="main" aria-label="Écran de combat" >
+    <button id="muteBtn" aria-label="Activer ou désactiver le son">🔊</button>
+    <div id="healthBars" aria-live="polite" aria-atomic="true">
+      <div class="healthContainer" aria-label="Santé d’Eddy">
+        <div id="eddyHealth" class="healthBar" style="width: 100%;"></div>
+      </div>
+      <div class="healthContainer" aria-label="Santé de l'ennemi">
+        <div id="enemyHealth" class="healthBar" style="width: 100%;"></div>
+      </div>
+    </div>
+
+    <div id="charactersRow">
+      <canvas id="eddy" class="character" width="96" height="96"></canvas>
+      <canvas id="enemy" class="character" width="96" height="96"></canvas>
+    </div>
+
+    <div id="messageBox" aria-live="polite" aria-atomic="true"></div>
+
+    <div id="actions" role="group" aria-label="Actions de combat">
+      <button id="attackBtn" class="actionBtn">Attaquer</button>
+      <button id="defendBtn" class="actionBtn">Défendre</button>
+      <button id="healBtn" class="actionBtn">Soigner</button>
+    </div>
+  </section>
+
+  <!-- Ecran résultat -->
+  <section id="resultScreen" role="main" aria-label="Écran de résultat">
+    <h1 id="resultTitle"></h1>
+    <div id="resultText" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.4;"></div>
+    <button id="restartBtn" aria-label="Recommencer l’aventure">Recommencer</button>
+  </section>
+</div>
+
+<script>
+// --------------------------------------------------------------
+// Variables & références DOM
+const startScreen = document.getElementById('startScreen');
+const combatScreen = document.getElementById('combatScreen');
+const resultScreen = document.getElementById('resultScreen');
+
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const muteBtn = document.getElementById('muteBtn');
+
+const eddyCanvas = document.getElementById('eddy');
+const eddyCtx = eddyCanvas.getContext('2d');
+const enemyCanvas = document.getElementById('enemy');
+const enemyCtx = enemyCanvas.getContext('2d');
+
+const messageBox = document.getElementById('messageBox');
+const eddyHealthBar = document.getElementById('eddyHealth');
+const enemyHealthBar = document.getElementById('enemyHealth');
+
+const attackBtn = document.getElementById('attackBtn');
+const defendBtn = document.getElementById('defendBtn');
+const healBtn = document.getElementById('healBtn');
+
+const startImageCanvas = document.getElementById('startImage');
+const startImageCtx = startImageCanvas.getContext('2d');
+
+// --------------------------------------------------------------
+// Audio assets (sons libres)
+// https://freesound.org
+const sounds = {
+  attack: new Audio('https://freesound.org/data/previews/341/341695_6241653-lq.mp3'),
+  defend: new Audio('https://freesound.org/data/previews/182/182274_2398400-lq.mp3'),
+  heal: new Audio('https://freesound.org/data/previews/341/341693_6241653-lq.mp3'),
+  enemyAttack: new Audio('https://freesound.org/data/previews/352/352661_5121236-lq.mp3'),
+  music: new Audio('https://cdn.pixabay.com/download/audio/2022/03/16/audio_2936a784d0.mp3?filename=8-bit-arcade-loop-6402.mp3'),
+  bossMusic: new Audio('https://cdn.pixabay.com/download/audio/2022/03/22/audio_4b4151b384.mp3?filename=8bit-boss-battle-10828.mp3')
+};
+sounds.music.loop = true;
+sounds.music.volume = 0.2;
+sounds.bossMusic.loop = true;
+sounds.bossMusic.volume = 0.3;
+
+let muted = false;
+muteBtn.onclick = () => {
+  muted = !muted;
+  Object.values(sounds).forEach(s => s.muted = muted);
+  muteBtn.textContent = muted ? '🔈' : '🔊';
+};
+
+// --------------------------------------------------------------
+// Pixel Art détaillé (96x96) - Eddy et ennemis, dessiné dans canvas
+// Les sprites ici sont réalisés avec rectangles pour la démo
+
+function drawEddy(ctx, frame = 0) {
+  ctx.clearRect(0,0,96,96);
+  // Corps - coeur rouge vif
+  ctx.fillStyle = '#ff1a75';
+  // forme coeur pixel
+  ctx.fillRect(36,20,12,12);
+  ctx.fillRect(30,26,18,18);
+  ctx.fillRect(24,44,30,22);
+  ctx.fillRect(30,66,12,12);
+  // Bras
+  ctx.fillRect(16,44,14,6);
+  ctx.fillRect(66,44,14,6);
+  // Jambes
+  ctx.fillRect(36,82,10,12);
+  ctx.fillRect(50,82,10,12);
+  // Yeux
+  ctx.fillStyle = '#ff66b2';
+  ctx.fillRect(42,44,6,6);
+  ctx.fillRect(54,44,6,6);
+  // Sourire
+  ctx.fillRect(42,62,18,4);
+}
+
+function drawSkeleton(ctx, frame=0) {
+  ctx.clearRect(0,0,96,96);
+  // Crâne
+  ctx.fillStyle = '#cccccc';
+  ctx.fillRect(36,20,24,24);
+  ctx.fillStyle = '#999999';
+  ctx.fillRect(42,28,6,6);
+  ctx.fillRect(54,28,6,6);
+  ctx.fillStyle = '#cccccc';
+  ctx.fillRect(30,44,36,24);
+  // Ribs
+  ctx.fillRect(28,68,40,6);
+  // Bras
+  ctx.fillRect(18,44,12,18);
+  ctx.fillRect(66,44,12,18);
+  // Jambes
+  ctx.fillRect(30,74,12,14);
+  ctx.fillRect(54,74,12,14);
+}
+
+function drawGhostCat(ctx, frame=0) {
+  ctx.clearRect(0,0,96,96);
+  // Corps fantôme bleu clair
+  ctx.fillStyle = 'rgba(100, 150, 255, 0.6)';
+  ctx.fillRect(30,30,36,36);
+  // Tête avec oreilles pointues
+  ctx.fillRect(36,20,24,16);
+  ctx.fillRect(30,26,6,12);
+  ctx.fillRect(54,26,6,12);
+  // Yeux blancs
+  ctx.fillStyle = 'white';
+  ctx.fillRect(42,30,6,6);
+  ctx.fillRect(54,30,6,6);
+  // Queue pixelisée
+  ctx.fillStyle = 'rgba(100,150,255,0.3)';
+  ctx.fillRect(24,44,6,12);
+}
+
+function drawRobot(ctx, frame=0) {
+  ctx.clearRect(0,0,96,96);
+  // Corps gris métallique
+  ctx.fillStyle = '#9999aa';
+  ctx.fillRect(30,20,36,52);
+  // Tête carrée
+  ctx.fillRect(36,12,24,16);
+  // Yeux rouges
+  ctx.fillStyle = '#ff3333';
+  ctx.fillRect(42,18,6,6);
+  ctx.fillRect(54,18,6,6);
+  // Bras articulés
+  ctx.fillStyle = '#8888aa';
+  ctx.fillRect(18,36,12,12);
+  ctx.fillRect(66,36,12,12);
+  // Jambes carrées
+  ctx.fillRect(30,72,14,14);
+  ctx.fillRect(52,72,14,14);
+}
+
+function drawBoss(ctx, frame=0) {
+  ctx.clearRect(0,0,96,96);
+  // Gardien mécanique imposant - couleur bleu acier
+  ctx.fillStyle = '#4477cc';
+  ctx.fillRect(28,16,40,56);
+  // Casque
+  ctx.fillRect(34,10,28,14);
+  // Yeux brillants oranges
+  ctx.fillStyle = '#ffaa33';
+  ctx.fillRect(40,20,8,8);
+  ctx.fillRect(52,20,8,8);
+  // Bras massifs
+  ctx.fillStyle = '#3355aa';
+  ctx.fillRect(14,40,16,18);
+  ctx.fillRect(62,40,16,18);
+  // Jambes lourdes
+  ctx.fillRect(28,72,14,20);
+  ctx.fillRect(54,72,14,20);
+}
+
+// --------------------------------------------------------------
+// Jeu - Etat
+
+const playerMaxHealth = 100;
+let playerHealth, playerDefending, playerHealCount;
+
+const enemies = [
+  {
+    name: 'Squelette',
+    draw: drawSkeleton,
+    maxHealth: 80,
+    health: 80,
+    defending: false,
+    attackMin: 8,
+    attackMax: 18,
+    healMin: 0,
+    healMax: 0,
+    healChance: 0,
+  },
+  {
+    name: 'Chat Spectral',
+    draw: drawGhostCat,
+    maxHealth: 70,
+    health: 70,
+    defending: false,
+    attackMin: 6,
+    attackMax: 15,
+    healMin: 0,
+    healMax: 0,
+    healChance: 0,
+  },
+  {
+    name: 'Robot Errant',
+    draw: drawRobot,
+    maxHealth: 100,
+    health: 100,
+    defending: false,
+    attackMin: 10,
+    attackMax: 22,
+    healMin: 5,
+    healMax: 12,
+    healChance: 0.25,
+  }
+];
+
+const boss = {
+  name: 'Gardien Mécanique',
+  draw: drawBoss,
+  maxHealth: 180,
+  health: 180,
+  defending: false,
+  attackMin: 15,
+  attackMax: 30,
+  healMin: 8,
+  healMax: 18,
+  healChance: 0.3,
+};
+
+let currentEnemyIndex = 0;
+let inBossFight = false;
+
+// --------------------------------------------------------------
+// Références aux canvas context
+function redrawCharacters() {
+  drawEddy(eddyCtx);
+  if(inBossFight) {
+    boss.draw(enemyCtx);
+  } else {
+    enemies[currentEnemyIndex].draw(enemyCtx);
+  }
+}
+
+// --------------------------------------------------------------
+// Mise à jour des barres de santé
+function updateHealthBars() {
+  eddyHealthBar.style.width = (playerHealth / playerMaxHealth * 100) + '%';
+  if(in

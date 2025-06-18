@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jeu d’Eddy - Tu m’aimes ?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+  
+  body {
+    margin: 0; 
+    height: 100vh;
+    background: #000;
+    color: #D8BFD8;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .container {
+    background: #120022;
+    border-radius: 15px;
+    box-shadow: 0 0 15px #BA55D3AA;
+    max-width: 480px;
+    width: 100%;
+    padding: 30px 25px;
+    text-align: center;
+    position: relative;
+  }
+
+  h1 {
+    margin-bottom: 30px;
+    color: #BA55D3;
+    text-shadow: 0 0 8px #BA55D3;
+  }
+
+  .question {
+    font-size: 1.3rem;
+    margin-bottom: 40px;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  button {
+    background: #BA55D3;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 38px;
+    font-size: 1.2rem;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 0 10px #BA55D3;
+    position: relative;
+    overflow: visible;
+    transition: background 0.3s ease;
+  }
+  button:focus {
+    outline: none;
+  }
+  button:hover {
+    background: #9B3CA9;
+    box-shadow: 0 0 20px #D580F7;
+  }
+
+  /* Animation tournoyante sur les boutons */
+  .spin {
+    animation: spin 6s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .response {
+    margin-top: 40px;
+    font-size: 1.2rem;
+    min-height: 50px;
+    color: #E6C7FF;
+    text-shadow: 0 0 6px #BA55D3;
+  }
+
+  /* Coeur animé en arrière-plan */
+  .heart-bg {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle at center, #BA55D3AA 60%, transparent 70%);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    filter: blur(40px);
+    animation: pulse 3s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
+    50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="heart-bg"></div>
+
+<div class="container" role="main" aria-live="polite" aria-atomic="true">
+  <h1>Eddy te demande...</h1>
+  <div class="question" id="question">Tu m'aimes ?</div>
+  <div class="buttons">
+    <button class="spin" onclick="choose('a')">Oui 💜</button>
+    <button class="spin" style="animation-delay: -3s;" onclick="choose('b')">Oui 💖</button>
+  </div>
+  <div class="response" id="response"></div>
+</div>
+
+<script>
+  const questions = [
+    "Tu m'aimes ?",
+    "Veux-tu passer plus de temps avec moi ?",
+    "Penses-tu à moi souvent ?",
+    "Suis-je ton préféré ?",
+    "Veux-tu qu'on soit toujours ensemble ?",
+  ];
+
+  const responses = [
+    ["Moi aussi, tu es mon trésor 💜", "Je t’aime plus que tout 💖"],
+    ["Chaque seconde avec toi est un cadeau 🎁", "Avec toi, le temps s’arrête 💫"],
+    ["Tu es toujours dans mes pensées 💭", "Je ne peux penser qu’à toi 💕"],
+    ["Tu es la seule, la vraie 💘", "Personne ne te remplace, ma reine 👑"],
+    ["Pour toujours et à jamais, mon amour 🔒", "Je veux construire un futur avec toi 💞"],
+  ];
+
+  let step = 0;
+
+  function choose(option) {
+    const responseDiv = document.getElementById('response');
+    // Toujours positif : on choisit réponse selon bouton
+    const respIndex = option === 'a' ? 0 : 1;
+    responseDiv.textContent = responses[step][respIndex];
+
+    step++;
+    if (step < questions.length) {
+      // Après un petit délai, changer la question et reset réponse
+      setTimeout(() => {
+        document.getElementById('question').textContent = questions[step];
+        responseDiv.textContent = "";
+      }, 2000);
+    } else {
+      // Fin du jeu : message final
+      setTimeout(() => {
+        document.getElementById('question').textContent = "Merci d’avoir joué, tu es incroyable ! 💖";
+        responseDiv.textContent = "Eddy t’envoie tout son amour éternel 🌹";
+        // Désactiver boutons
+        document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+      }, 2000);
+    }
+  }
+</script>
+
+</body>
+</html>
